@@ -56,10 +56,36 @@ docker compose up
 > This project is being built milestone by milestone. Setup steps for the render
 > service, frontend, and MCP server are added as those pieces land.
 
+## Render service
+
+A standalone Node/TypeScript service that turns **deck JSON** into a **PDF** (via
+Playwright) and an editable **PPTX** (via pptxgenjs). Try it directly:
+
+```bash
+docker compose up --build render-service
+```
+
+```bash
+curl -X POST http://localhost:4000/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deck": {
+      "title": "Introduction to Machine Learning",
+      "slides": [
+        { "type": "title", "title": "Introduction to Machine Learning", "subtitle": "A gentle overview" },
+        { "type": "content", "title": "What is ML?", "bullets": ["Learns patterns from data", "Improves without explicit rules", "Powers vision, language, recommendations"], "notes": "Open with a relatable example." },
+        { "type": "closing", "title": "Thank you", "subtitle": "Questions?" }
+      ]
+    }
+  }'
+```
+
+The response contains `files.pdf` and `files.pptx` download URLs.
+
 ## Status
 
 - [x] Scaffold + n8n
-- [ ] Render service (PDF + PPTX)
+- [x] Render service (PDF + PPTX)
 - [ ] n8n generation workflow
 - [ ] Frontend
 - [ ] MCP server

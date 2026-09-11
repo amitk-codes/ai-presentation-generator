@@ -21,5 +21,22 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n # persists workflows + credentials across restarts
 
+  # render-service — turns deck JSON into downloadable files (PDF + PPTX).
+  # This is the one job n8n can't do itself: it needs a headless browser
+  # (Playwright) for PDF and pptxgenjs for an editable PowerPoint.
+  render-service:
+    build: ./render-service
+    container_name: pa-render
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      # Base URL embedded in returned download links. Override with your tunnel
+      # URL for remote (ChatGPT/Claude) demos.
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:4000}
+      - OUTPUT_DIR=/app/output
+    volumes:
+      - ./output:/app/output # generated decks land here (git-ignored)
+
 volumes:
   n8n_data:
