@@ -45,7 +45,7 @@ export default function Hero() {
       </h1>
       <p className="max-w-[620px] mt-6 text-[clamp(16px,2vw,19px)] text-muted">
         Describe your topic — get a polished, downloadable deck as <strong>PDF</strong> and
-        editable <strong>PowerPoint</strong>. Powered by an n8n workflow and Google Gemini.
+        editable <strong>PowerPoint</strong>. Powered by an automated n8n workflow.
       </p>
       <div className="flex flex-wrap gap-[clamp(24px,5vw,56px)] mt-10">
         <Stat target={4} prefix="~" suffix="s" label="avg. generation" />

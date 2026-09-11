@@ -39,6 +39,7 @@ services:
       # URL for remote (ChatGPT/Claude) demos.
       - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:4000}
       - OUTPUT_DIR=/app/output
+      - PEXELS_API_KEY=${PEXELS_API_KEY:-} # optional; slide photos when set
     volumes:
       - ./output:/app/output # generated decks land here (git-ignored)
 

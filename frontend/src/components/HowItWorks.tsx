@@ -12,8 +12,8 @@ export default function HowItWorks() {
         </div>
         <div className="how-step">
           <span className="how-n">02</span>
-          <b className="text-[18px]">n8n + Gemini build it</b>
-          <p className="text-muted mt-1.5 text-[14.5px]">A visual workflow prompts Gemini for a structured deck, then renders it.</p>
+          <b className="text-[18px]">The workflow builds it</b>
+          <p className="text-muted mt-1.5 text-[14.5px]">A visual n8n workflow drafts a structured deck with AI, then renders it.</p>
         </div>
         <div className="how-step">
           <span className="how-n">03</span>

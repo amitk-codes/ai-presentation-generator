@@ -6,6 +6,7 @@ import { DeckSchema } from "./types";
 import { deckToHtml } from "./html-template";
 import { renderPdf } from "./pdf";
 import { renderPptx } from "./pptx";
+import { resolveImages } from "./pexels";
 
 const PORT = Number(process.env.PORT || 4000);
 const PUBLIC_BASE_URL = (
@@ -41,6 +42,9 @@ app.post("/render", async (req, res) => {
 
   const id = crypto.randomUUID().slice(0, 8);
   try {
+    // Fetch + embed Pexels photos for any slide with an image_query (best-effort).
+    await resolveImages(deck);
+
     const files: Record<string, string> = {};
 
     if (requested.includes("pdf")) {

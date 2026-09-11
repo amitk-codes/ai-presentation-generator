@@ -46,7 +46,7 @@ function HowItWorksSide() {
         </li>
         <li className="flex gap-[14px]">
           <span className="step-n">2</span>
-          <div><b className="text-[15px]">AI writes the slides</b><p className="mt-[3px] text-[13.5px] text-muted">Gemini drafts a structured, on-topic deck.</p></div>
+          <div><b className="text-[15px]">AI writes the slides</b><p className="mt-[3px] text-[13.5px] text-muted">The AI drafts a structured, on-topic deck.</p></div>
         </li>
         <li className="flex gap-[14px]">
           <span className="step-n">3</span>

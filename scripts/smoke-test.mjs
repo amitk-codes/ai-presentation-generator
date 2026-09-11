@@ -23,15 +23,24 @@ if (!API_KEY || API_KEY.startsWith("your_")) {
 }
 
 // Shape is specified in the prompt (flash-lite is flaky with responseSchema),
-// then validated defensively after parsing — mirrors render-service/types.ts.
+// then validated defensively after parsing — mirrors the n8n workflow.
+const THEME = process.env.THEME || "professional";
 const SYSTEM_PROMPT = `You are an expert presentation designer.
-Return ONLY valid JSON (no markdown fences, no commentary) with this exact structure:
-{"title": string, "slides": [{"type": "title|content|section|closing", "title": string, "subtitle"?: string, "bullets"?: string[], "notes"?: string}]}
+Return ONLY valid JSON (no markdown fences, no commentary) as {"title": string, "slides": [Slide, ...]}.
+Each Slide is one of these shapes:
+- {"type":"title","title":string,"subtitle":string,"image_query":string}
+- {"type":"section","title":string,"subtitle":string,"image_query":string}
+- {"type":"content","title":string,"bullets":string[],"notes":string,"image_query":string(optional)}
+- {"type":"stat","title":string,"stats":[{"value":string,"label":string}]}
+- {"type":"quote","quote":string,"attribution":string(optional)}
+- {"type":"closing","title":string,"subtitle":string,"image_query":string}
 Rules:
-- Start with one "title" slide and end with one "closing" slide.
-- Use "content" slides with 3-5 concise, parallel bullet points (max ~12 words each).
-- Optionally use "section" slides to divide major parts.
-- Add a brief "notes" (speaker note) to content slides.
+- Start with a "title" slide and end with a "closing" slide.
+- Use a VARIED mix: several "content" slides, at least one "section", and where they fit a "stat" and/or "quote". Do not make every slide a bullet list.
+- "content" bullets: 3-5 concise points (max ~12 words) + brief "notes".
+- "stat" values are illustrative estimates, not cited facts.
+- "quote": do NOT fabricate quotes from real people; use an illustrative statement, attributed generically or not at all.
+- "image_query": a 2-4 word visual term on title/section/closing and 1-2 content slides.
 - Keep titles short and specific. No markdown, no emojis.`;
 
 function buildUserPrompt(topic, nSlides, opts = {}) {
@@ -87,7 +96,8 @@ async function render(deck) {
 (async () => {
   console.log(`→ Gemini (${MODEL}): generating a deck about "${topic}"...`);
   const deck = await callGemini(topic, nSlides);
-  console.log(`✓ Gemini returned "${deck.title}" with ${deck.slides.length} slides`);
+  deck.theme = THEME; // set THEME=persuasive|casual|academic|inspirational to try others
+  console.log(`✓ Gemini returned "${deck.title}" with ${deck.slides.length} slides (theme: ${THEME})`);
   console.log("  slide types:", deck.slides.map((s) => s.type).join(", "));
 
   console.log(`→ Render service (${RENDER_URL})...`);

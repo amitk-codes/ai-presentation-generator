@@ -29,7 +29,8 @@ web frontend, and an **MCP server** callable from ChatGPT or Claude.
 
 - **AI model:** Google Gemini (`gemini-3.1-flash-lite`)
 - **Orchestration:** n8n (self-hosted)
-- **Render service:** Node.js + TypeScript, Playwright (PDF) + pptxgenjs (PPTX)
+- **Render service:** Node.js + TypeScript, Playwright (PDF) + pptxgenjs (PPTX); per-tone
+  themes (fonts/colors), Pexels photos, and varied layouts (stat / quote / split)
 - **Frontend:** React + TypeScript (Vite) + Tailwind CSS v4, pdf.js for the slide preview
 - **MCP server:** Node.js + TypeScript, official MCP SDK (Streamable HTTP)
 - **Packaging:** Docker Compose
@@ -38,6 +39,8 @@ web frontend, and an **MCP server** callable from ChatGPT or Claude.
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 - A free Google Gemini API key — [Google AI Studio](https://aistudio.google.com/apikey)
+- *(optional)* A free [Pexels API key](https://www.pexels.com/api/) for slide photos —
+  without it, decks render with clean typography (no photos)
 
 ## Quickstart (work in progress)
 

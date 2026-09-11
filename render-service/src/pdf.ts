@@ -5,7 +5,9 @@ export async function renderPdf(html: string, outPath: string): Promise<void> {
   const browser = await chromium.launch({ args: ["--no-sandbox"] });
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "load" });
+    // networkidle lets the themed Google Font load; then ensure it's applied.
+    await page.setContent(html, { waitUntil: "networkidle" });
+    await page.evaluate(() => (document as any).fonts?.ready).catch(() => {});
     await page.pdf({
       path: outPath,
       width: "1280px",

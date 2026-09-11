@@ -1,6 +1,6 @@
 const FEATURES = [
   { ic: "◆", title: "n8n workflow", body: "The generation logic lives as a visible, editable workflow — the brain." },
-  { ic: "✦", title: "Google Gemini", body: "flash-lite tier with thinking off for ~4-second decks." },
+  { ic: "✦", title: "Fast AI drafting", body: "Structured, on-topic slides in about four seconds." },
   { ic: "▤", title: "PDF + PPTX", body: "A polished PDF and a genuinely editable PowerPoint from one source." },
   { ic: "⌘", title: "MCP server", body: "Generate from inside ChatGPT or Claude — same workflow, one tool." },
 ];

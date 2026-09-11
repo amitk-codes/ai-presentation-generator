@@ -9,7 +9,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "8a86897c-b537-464d-9ac4-f0dce73851b8",
+      "id": "646bd183-f50d-49dc-9fe1-4451690901f9",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -17,13 +17,13 @@
         -40,
         300
       ],
-      "webhookId": "64a1b472-7da3-4cae-ac69-a2cfc530562e"
+      "webhookId": "003667ea-59fc-44a3-9d14-069066f101f1"
     },
     {
       "parameters": {
-        "jsCode": "// Turn the incoming request into a Gemini \"generateContent\" body.\nconst body = ($input.first().json.body) || {};\nconst topic = (body.content || body.topic || '').trim();\nif (!topic) { throw new Error('Field \"content\" (the topic/instructions) is required.'); }\n\nconst nSlides = Number(body.n_slides) || 6;\nconst tone = body.tone || '';\nconst audience = body.audience || '';\nconst instructions = body.instructions || '';\n\nconst SYSTEM_PROMPT = \"You are an expert presentation designer.\\nReturn ONLY valid JSON (no markdown fences, no commentary) with this exact structure:\\n{\\\"title\\\": string, \\\"slides\\\": [{\\\"type\\\": \\\"title|content|section|closing\\\", \\\"title\\\": string, \\\"subtitle\\\"?: string, \\\"bullets\\\"?: string[], \\\"notes\\\"?: string}]}\\nRules:\\n- Start with one \\\"title\\\" slide and end with one \\\"closing\\\" slide.\\n- Use \\\"content\\\" slides with 3-5 concise, parallel bullet points (max ~12 words each).\\n- Optionally use \\\"section\\\" slides to divide major parts.\\n- Add a brief \\\"notes\\\" (speaker note) to content slides.\\n- Keep titles short and specific. No markdown, no emojis.\";\n\nconst userLines = [\n  'Create a presentation about: ' + topic,\n  'Target roughly ' + nSlides + ' slides (including title and closing).',\n];\nif (tone) userLines.push('Tone: ' + tone + '.');\nif (audience) userLines.push('Audience: ' + audience + '.');\nif (instructions) userLines.push('Extra instructions: ' + instructions + '.');\n\nconst geminiBody = {\n  systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },\n  contents: [{ role: 'user', parts: [{ text: userLines.join('\\n') }] }],\n  generationConfig: {\n    responseMimeType: 'application/json',\n    temperature: 0.7,\n    // Disable model \"thinking\" for speed (flash-lite): ~4s vs ~8-10s.\n    thinkingConfig: { thinkingBudget: 0 },\n  },\n};\n\nreturn [{ json: { geminiBody } }];"
+        "jsCode": "// Turn the incoming request into a Gemini \"generateContent\" body.\nconst body = ($input.first().json.body) || {};\nconst topic = (body.content || body.topic || '').trim();\nif (!topic) { throw new Error('Field \"content\" (the topic/instructions) is required.'); }\n\nconst nSlides = Number(body.n_slides) || 6;\nconst tone = body.tone || '';\nconst audience = body.audience || '';\nconst instructions = body.instructions || '';\n\nconst SYSTEM_PROMPT = \"You are an expert presentation designer.\\nReturn ONLY valid JSON (no markdown fences, no commentary) as {\\\"title\\\": string, \\\"slides\\\": [Slide, ...]}.\\nEach Slide is one of these shapes:\\n- {\\\"type\\\":\\\"title\\\",\\\"title\\\":string,\\\"subtitle\\\":string,\\\"image_query\\\":string}\\n- {\\\"type\\\":\\\"section\\\",\\\"title\\\":string,\\\"subtitle\\\":string,\\\"image_query\\\":string}\\n- {\\\"type\\\":\\\"content\\\",\\\"title\\\":string,\\\"bullets\\\":string[],\\\"notes\\\":string,\\\"image_query\\\":string(optional)}\\n- {\\\"type\\\":\\\"stat\\\",\\\"title\\\":string,\\\"stats\\\":[{\\\"value\\\":string,\\\"label\\\":string}]}\\n- {\\\"type\\\":\\\"quote\\\",\\\"quote\\\":string,\\\"attribution\\\":string(optional)}\\n- {\\\"type\\\":\\\"closing\\\",\\\"title\\\":string,\\\"subtitle\\\":string,\\\"image_query\\\":string}\\nRules:\\n- Start with one \\\"title\\\" slide and end with one \\\"closing\\\" slide.\\n- Use a VARIED mix: several \\\"content\\\" slides, at least one \\\"section\\\" divider, and where they fit, one \\\"stat\\\" slide and/or one \\\"quote\\\" slide. Do not make every slide a bullet list.\\n- \\\"content\\\" bullets: 3-5 concise, parallel points (max ~12 words). Include brief \\\"notes\\\".\\n- \\\"stat\\\": 1-3 entries; values are illustrative estimates (e.g. \\\"70%\\\", \\\"3x\\\"), not cited facts.\\n- \\\"quote\\\": do NOT fabricate quotes from real, named people. Use an illustrative statement; omit attribution or attribute generically (e.g. \\\"Industry perspective\\\").\\n- \\\"image_query\\\": a 2-4 word visual search term (e.g. \\\"electric vehicle highway\\\"). Add it to the title, section, and closing slides, and to 1-2 content slides that suit a photo. Omit it elsewhere.\\n- Keep titles short and specific. No markdown, no emojis.\";\n\nconst userLines = [\n  'Create a presentation about: ' + topic,\n  'Target roughly ' + nSlides + ' slides (including title and closing).',\n];\nif (tone) userLines.push('Tone: ' + tone + '.');\nif (audience) userLines.push('Audience: ' + audience + '.');\nif (instructions) userLines.push('Extra instructions: ' + instructions + '.');\n\nconst geminiBody = {\n  systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },\n  contents: [{ role: 'user', parts: [{ text: userLines.join('\\n') }] }],\n  generationConfig: {\n    responseMimeType: 'application/json',\n    temperature: 0.7,\n    // Disable model \"thinking\" for speed (flash-lite): ~4s vs ~8-10s.\n    thinkingConfig: { thinkingBudget: 0 },\n  },\n};\n\nreturn [{ json: { geminiBody } }];"
       },
-      "id": "c0501c48-6856-4c45-bd43-f714005d5dee",
+      "id": "558c58e4-7615-487c-b81c-bb195995bbb7",
       "name": "Build Gemini Request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -42,7 +42,7 @@
         "jsonBody": "={{ JSON.stringify($json.geminiBody) }}",
         "options": {}
       },
-      "id": "481b1875-04df-43c1-a576-cea7b5855438",
+      "id": "19d4bab8-5a26-46ba-b4a4-98148b841f81",
       "name": "Gemini",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -56,9 +56,9 @@
     },
     {
       "parameters": {
-        "jsCode": "// Extract and validate the deck JSON returned by Gemini.\nconst res = $input.first().json;\nconst raw = res && res.candidates && res.candidates[0]\n  && res.candidates[0].content && res.candidates[0].content.parts\n  && res.candidates[0].content.parts[0] && res.candidates[0].content.parts[0].text;\nif (!raw) {\n  throw new Error('No content returned by Gemini: ' + JSON.stringify(res).slice(0, 300));\n}\n// Defensive: strip accidental markdown fences before parsing.\nconst cleaned = String(raw).replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();\nlet deck;\ntry { deck = JSON.parse(cleaned); }\ncatch (e) { throw new Error('Gemini did not return valid JSON deck.'); }\nif (!deck.title || !Array.isArray(deck.slides) || deck.slides.length === 0) {\n  throw new Error('Deck is missing a title or slides.');\n}\nreturn [{ json: { deck } }];"
+        "jsCode": "// Extract and validate the deck JSON returned by Gemini.\nconst res = $input.first().json;\nconst raw = res && res.candidates && res.candidates[0]\n  && res.candidates[0].content && res.candidates[0].content.parts\n  && res.candidates[0].content.parts[0] && res.candidates[0].content.parts[0].text;\nif (!raw) {\n  throw new Error('No content returned by Gemini: ' + JSON.stringify(res).slice(0, 300));\n}\n// Defensive: strip accidental markdown fences before parsing.\nconst cleaned = String(raw).replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();\nlet deck;\ntry { deck = JSON.parse(cleaned); }\ncatch (e) { throw new Error('Gemini did not return valid JSON deck.'); }\nif (!deck.title || !Array.isArray(deck.slides) || deck.slides.length === 0) {\n  throw new Error('Deck is missing a title or slides.');\n}\n// Derive the visual theme from the requested tone (tones map 1:1 to themes).\nconst VALID_THEMES = ['professional', 'casual', 'academic', 'persuasive', 'inspirational'];\nlet tone = '';\ntry { tone = (($('Webhook').first().json.body) || {}).tone || ''; } catch (e) {}\ndeck.theme = VALID_THEMES.indexOf(tone) !== -1 ? tone : 'professional';\nreturn [{ json: { deck } }];"
       },
-      "id": "b9ed29fe-d7ae-4840-a4e7-aca71ae6930d",
+      "id": "8524dbf6-8428-4982-afb5-d55511654762",
       "name": "Parse Deck",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -77,7 +77,7 @@
         "jsonBody": "={{ JSON.stringify({ deck: $json.deck, formats: ['pdf','pptx'] }) }}",
         "options": {}
       },
-      "id": "4b7eba4d-5005-4a9d-9810-44190326a0db",
+      "id": "8f5d4b62-fa70-407d-b852-c4257d40e157",
       "name": "Render",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -92,7 +92,7 @@
         "responseBody": "={{ JSON.stringify({ id: $json.id, title: $json.title, files: $json.files }) }}",
         "options": {}
       },
-      "id": "dad5b384-b3d5-40c9-9876-7e55ba6ed77c",
+      "id": "42352fd8-fa77-469b-9e5a-7cbf8799de81",
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,

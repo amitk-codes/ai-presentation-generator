@@ -170,8 +170,23 @@
 
   .thumbs { @apply flex flex-col; gap: 10px; max-height: 540px; overflow-y: auto; padding-right: 6px; }
   .thumbs canvas { @apply border border-line-2 block cursor-pointer; width: 100%; background: #fff; box-shadow: var(--shadow-hard-sm); animation: fade-up 0.4s ease both; transition: outline 0.12s; }
-  .thumbs canvas:hover { outline: 2px solid var(--color-muted); }
-  .thumbs canvas.is-active { outline: 3px solid var(--color-brand); }
+  /* outline-offset keeps the ring INSIDE the canvas so it isn't clipped by the
+     scrolling .thumbs container (was cutting the left edge). */
+  .thumbs canvas:hover { outline: 2px solid var(--color-muted); outline-offset: -2px; }
+  .thumbs canvas.is-active { outline: 3px solid var(--color-brand); outline-offset: -3px; }
   .preview { @apply border border-line-2 grid; place-items: center; width: 100%; background: #fff; overflow: auto; }
   .preview canvas { width: 100%; height: auto; display: block; }
+}
+
+/* On narrow screens, show slide thumbnails as a horizontal strip (not full-width). */
+@media (max-width: 620px) {
+  .thumbs {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-right: 0;
+    padding-bottom: 8px;
+  }
+  .thumbs canvas { width: 150px; flex: none; }
 }
