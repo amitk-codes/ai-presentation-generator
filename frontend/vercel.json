@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/webhook/:path*",
+      "destination": "https://amit-n8n-200305188183.asia-southeast1.run.app/webhook/:path*"
+    },
+    {
+      "source": "/files/:path*",
+      "destination": "https://amit-render-service-200305188183.asia-southeast1.run.app/files/:path*"
+    }
+  ]
+}
