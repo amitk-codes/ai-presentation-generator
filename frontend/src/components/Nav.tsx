@@ -15,7 +15,7 @@ export default function Nav() {
       <nav className="flex gap-[26px] ml-3 max-[900px]:hidden">
         <a href="#how" className="nav-link">How it works</a>
         <a href="#features" className="nav-link">Features</a>
-        <a href="https://github.com/amitk-codes" target="_blank" rel="noopener" className="nav-link">GitHub ↗</a>
+        <a href="https://github.com/amitk-codes/ai-presentation-generator" target="_blank" rel="noopener" className="nav-link">GitHub ↗</a>
       </nav>
       <div className="ml-auto flex items-center gap-4">
         <div className="flex gap-1.5 max-[620px]:hidden" aria-hidden="true">
