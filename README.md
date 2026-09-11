@@ -82,11 +82,48 @@ curl -X POST http://localhost:4000/render \
 
 The response contains `files.pdf` and `files.pptx` download URLs.
 
+## n8n workflow (the generation pipeline)
+
+The core logic lives in `workflows/presentation-generator.json` as six visible nodes:
+
+```
+Webhook → Build Gemini Request → Gemini → Parse Deck → Render → Respond
+```
+
+A topic goes in, Gemini returns structured deck JSON (forced via a response schema),
+the render service turns it into files, and the webhook returns the download URLs.
+
+**Run it:**
+
+```bash
+cp .env.example .env        # add your GEMINI_API_KEY
+docker compose up -d --build
+
+# Import + activate the workflow (one-time)
+docker cp workflows/presentation-generator.json pa-n8n:/tmp/wf.json
+docker compose exec -T n8n n8n import:workflow --input=/tmp/wf.json
+docker compose exec -T n8n n8n update:workflow --id=presgenwf0000001 --active=true
+docker compose restart n8n
+```
+
+You can also import it from the n8n UI (http://localhost:5678 → Import from File).
+
+**Generate a deck:**
+
+```bash
+curl -X POST http://localhost:5678/webhook/generate \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Getting started with Kubernetes","n_slides":6,"tone":"professional","audience":"developers"}'
+# → { "title": "...", "files": { "pdf": "...", "pptx": "..." } }
+```
+
+Prefer to test the logic without n8n? `node --env-file=.env scripts/smoke-test.mjs "Your topic"`.
+
 ## Status
 
 - [x] Scaffold + n8n
 - [x] Render service (PDF + PPTX)
-- [ ] n8n generation workflow
+- [x] n8n generation workflow
 - [ ] Frontend
 - [ ] MCP server
 - [ ] Docs + demo

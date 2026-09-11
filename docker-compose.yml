@@ -18,6 +18,10 @@ services:
       - GENERIC_TIMEZONE=Asia/Kolkata
       # Webhook base URL so the frontend + MCP server can reach triggers by name
       - WEBHOOK_URL=http://localhost:5678/
+      # Let workflow expressions read env vars (the Gemini key/model below)
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
     volumes:
       - n8n_data:/home/node/.n8n # persists workflows + credentials across restarts
 

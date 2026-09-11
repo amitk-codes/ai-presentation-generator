@@ -1,0 +1,167 @@
+{
+  "id": "presgenwf0000001",
+  "name": "Presentation Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "186af214-92ca-4f63-8cd4-4a3e9b621edd",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        300
+      ],
+      "webhookId": "bed5d3c7-00c7-4539-a489-70d0d321c2ae"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn the incoming request into a Gemini \"generateContent\" body.\nconst body = ($input.first().json.body) || {};\nconst topic = (body.content || body.topic || '').trim();\nif (!topic) { throw new Error('Field \"content\" (the topic/instructions) is required.'); }\n\nconst nSlides = Number(body.n_slides) || 6;\nconst tone = body.tone || '';\nconst audience = body.audience || '';\nconst instructions = body.instructions || '';\n\nconst SYSTEM_PROMPT = \"You are an expert presentation designer.\\nProduce a clear, well-structured slide deck as JSON.\\nRules:\\n- Start with one \\\"title\\\" slide and end with one \\\"closing\\\" slide.\\n- Use \\\"content\\\" slides with 3-5 concise, parallel bullet points (max ~12 words each).\\n- Optionally use \\\"section\\\" slides to divide major parts.\\n- Add a brief \\\"notes\\\" (speaker note) to content slides.\\n- Keep titles short and specific. No markdown, no emojis.\";\nconst DECK_SCHEMA = {\"type\":\"OBJECT\",\"properties\":{\"title\":{\"type\":\"STRING\"},\"slides\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"OBJECT\",\"properties\":{\"type\":{\"type\":\"STRING\",\"enum\":[\"title\",\"content\",\"section\",\"closing\"]},\"title\":{\"type\":\"STRING\"},\"subtitle\":{\"type\":\"STRING\"},\"bullets\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\"}},\"notes\":{\"type\":\"STRING\"}},\"required\":[\"type\",\"title\"]}}},\"required\":[\"title\",\"slides\"]};\n\nconst userLines = [\n  'Create a presentation about: ' + topic,\n  'Target roughly ' + nSlides + ' slides (including title and closing).',\n];\nif (tone) userLines.push('Tone: ' + tone + '.');\nif (audience) userLines.push('Audience: ' + audience + '.');\nif (instructions) userLines.push('Extra instructions: ' + instructions + '.');\n\nconst geminiBody = {\n  systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },\n  contents: [{ role: 'user', parts: [{ text: userLines.join('\\n') }] }],\n  generationConfig: {\n    responseMimeType: 'application/json',\n    responseSchema: DECK_SCHEMA,\n    temperature: 0.7,\n  },\n};\n\nreturn [{ json: { geminiBody } }];"
+      },
+      "id": "6be1c58e-d3d7-4144-90d7-0dfd4d1227ab",
+      "name": "Build Gemini Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{$env.GEMINI_MODEL || 'gemini-3.6-flash'}}:generateContent?key={{$env.GEMINI_API_KEY}}",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.geminiBody) }}",
+        "options": {}
+      },
+      "id": "c1c27fbd-610a-4624-84de-c9dc48057b0d",
+      "name": "Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate the deck JSON returned by Gemini.\nconst res = $input.first().json;\nconst raw = res && res.candidates && res.candidates[0]\n  && res.candidates[0].content && res.candidates[0].content.parts\n  && res.candidates[0].content.parts[0] && res.candidates[0].content.parts[0].text;\nif (!raw) {\n  throw new Error('No content returned by Gemini: ' + JSON.stringify(res).slice(0, 300));\n}\n// Defensive: strip accidental markdown fences before parsing.\nconst cleaned = String(raw).replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();\nlet deck;\ntry { deck = JSON.parse(cleaned); }\ncatch (e) { throw new Error('Gemini did not return valid JSON deck.'); }\nif (!deck.title || !Array.isArray(deck.slides) || deck.slides.length === 0) {\n  throw new Error('Deck is missing a title or slides.');\n}\nreturn [{ json: { deck } }];"
+      },
+      "id": "aba699d1-0b4a-4139-8e17-0503d065781f",
+      "name": "Parse Deck",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://render-service:4000/render",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ deck: $json.deck, formats: ['pdf','pptx'] }) }}",
+        "options": {}
+      },
+      "id": "a616dd43-58b0-42b2-819d-f5c38ed19046",
+      "name": "Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ id: $json.id, title: $json.title, files: $json.files }) }}",
+        "options": {}
+      },
+      "id": "2b99df20-5c19-456d-981e-ed7901c3fcae",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Gemini Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Gemini Request": {
+      "main": [
+        [
+          {
+            "node": "Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "main": [
+        [
+          {
+            "node": "Parse Deck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Deck": {
+      "main": [
+        [
+          {
+            "node": "Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
