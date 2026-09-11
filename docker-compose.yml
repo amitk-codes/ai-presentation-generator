@@ -21,7 +21,7 @@ services:
       # Let workflow expressions read env vars (the Gemini key/model below)
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite}
     volumes:
       - n8n_data:/home/node/.n8n # persists workflows + credentials across restarts
 

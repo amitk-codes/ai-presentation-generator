@@ -27,7 +27,7 @@ web frontend, and an **MCP server** callable from ChatGPT or Claude.
             └───────────────────┘
 ```
 
-- **AI model:** Google Gemini (`gemini-2.5-flash`)
+- **AI model:** Google Gemini (`gemini-3.1-flash-lite`)
 - **Orchestration:** n8n (self-hosted)
 - **Render service:** Node.js + TypeScript, Playwright (PDF) + pptxgenjs (PPTX)
 - **Frontend:** plain HTML/CSS/JS

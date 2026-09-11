@@ -11,7 +11,7 @@
  */
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 const RENDER_URL = process.env.RENDER_URL || "http://localhost:4000/render";
 
 const topic = process.argv[2] || "Introduction to Machine Learning";
@@ -22,31 +22,11 @@ if (!API_KEY || API_KEY.startsWith("your_")) {
   process.exit(1);
 }
 
-// ---- The deck schema Gemini must return (mirrors render-service/types.ts) ----
-const DECK_SCHEMA = {
-  type: "OBJECT",
-  properties: {
-    title: { type: "STRING" },
-    slides: {
-      type: "ARRAY",
-      items: {
-        type: "OBJECT",
-        properties: {
-          type: { type: "STRING", enum: ["title", "content", "section", "closing"] },
-          title: { type: "STRING" },
-          subtitle: { type: "STRING" },
-          bullets: { type: "ARRAY", items: { type: "STRING" } },
-          notes: { type: "STRING" },
-        },
-        required: ["type", "title"],
-      },
-    },
-  },
-  required: ["title", "slides"],
-};
-
+// Shape is specified in the prompt (flash-lite is flaky with responseSchema),
+// then validated defensively after parsing — mirrors render-service/types.ts.
 const SYSTEM_PROMPT = `You are an expert presentation designer.
-Produce a clear, well-structured slide deck as JSON.
+Return ONLY valid JSON (no markdown fences, no commentary) with this exact structure:
+{"title": string, "slides": [{"type": "title|content|section|closing", "title": string, "subtitle"?: string, "bullets"?: string[], "notes"?: string}]}
 Rules:
 - Start with one "title" slide and end with one "closing" slide.
 - Use "content" slides with 3-5 concise, parallel bullet points (max ~12 words each).
@@ -72,8 +52,8 @@ async function callGemini(topic, nSlides) {
     contents: [{ role: "user", parts: [{ text: buildUserPrompt(topic, nSlides) }] }],
     generationConfig: {
       responseMimeType: "application/json",
-      responseSchema: DECK_SCHEMA,
       temperature: 0.7,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   };
   const res = await fetch(url, {
