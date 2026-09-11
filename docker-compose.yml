@@ -42,5 +42,33 @@ services:
     volumes:
       - ./output:/app/output # generated decks land here (git-ignored)
 
+  # mcp-server — exposes a `generate_presentation` MCP tool over Streamable HTTP
+  # so ChatGPT/Claude can generate decks. It calls the SAME n8n webhook; it holds
+  # no generation logic of its own.
+  mcp-server:
+    build: ./mcp-server
+    container_name: pa-mcp
+    ports:
+      - "8787:8787" # 7000 avoided — macOS AirPlay Receiver binds it
+    environment:
+      - PORT=8787
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/generate
+    depends_on:
+      - n8n
+
+  # frontend — a simple web form. nginx serves the static page AND reverse-proxies
+  # /webhook/* to n8n, so the browser stays same-origin (no CORS needed).
+  frontend:
+    image: nginx:alpine
+    container_name: pa-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend/public:/usr/share/nginx/html:ro
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - n8n
+      - render-service
+
 volumes:
   n8n_data:

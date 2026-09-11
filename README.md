@@ -119,11 +119,47 @@ curl -X POST http://localhost:5678/webhook/generate \
 
 Prefer to test the logic without n8n? `node --env-file=.env scripts/smoke-test.mjs "Your topic"`.
 
+## Frontend
+
+A simple web page to drive the whole thing — open **http://localhost:8080** after
+`docker compose up`. Type a topic, pick options, and download the deck.
+
+nginx serves the static page and reverse-proxies `/webhook/*` to n8n, so the browser
+stays same-origin (no CORS). Files: `frontend/public/` + `frontend/nginx.conf`.
+
+## MCP server (ChatGPT / Claude)
+
+A remote **MCP server** (Streamable HTTP) exposes one tool, `generate_presentation`,
+that triggers the **same n8n workflow**. It runs at `http://localhost:8787/mcp` and
+holds no generation logic of its own. Files: `mcp-server/`.
+
+**Expose it publicly** (ChatGPT/Claude are cloud services and need a public URL):
+
+```bash
+# no signup required
+cloudflared tunnel --url http://localhost:8787
+# → gives a https://<random>.trycloudflare.com URL
+```
+
+**Connect it:**
+
+- **Claude** (claude.ai → Settings → Connectors → Add custom connector) or Claude
+  Desktop: use `https://<your-tunnel>/mcp`, no authentication.
+- **ChatGPT** (Settings → Connectors / Developer mode → Add): same
+  `https://<your-tunnel>/mcp` URL, no authentication.
+
+Then ask: *"Generate a 6-slide professional deck about the future of AI."* The
+assistant calls the tool and returns PDF + PPTX download links.
+
+> The returned links point at `localhost:4000`, which works when you click them on
+> the same machine running the stack. For a fully remote setup, also tunnel the
+> render service and set `PUBLIC_BASE_URL` to that public URL.
+
 ## Status
 
 - [x] Scaffold + n8n
 - [x] Render service (PDF + PPTX)
 - [x] n8n generation workflow
-- [ ] Frontend
-- [ ] MCP server
+- [x] Frontend
+- [x] MCP server
 - [ ] Docs + demo

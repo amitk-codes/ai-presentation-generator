@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Presentation Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <h1>AI Presentation Generator</h1>
+    <p>Describe your topic and get a downloadable deck — PDF &amp; PowerPoint.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <form id="form">
+        <label class="field">
+          <span>Topic / content <em>*</em></span>
+          <textarea id="content" name="content" rows="3" required
+            placeholder="e.g. The future of remote work, for a leadership offsite"></textarea>
+        </label>
+
+        <div class="row">
+          <label class="field field--sm">
+            <span>Slides</span>
+            <input id="n_slides" name="n_slides" type="number" min="3" max="20" value="6" />
+          </label>
+
+          <label class="field field--sm">
+            <span>Tone</span>
+            <select id="tone" name="tone">
+              <option value="professional">Professional</option>
+              <option value="casual">Casual</option>
+              <option value="academic">Academic</option>
+              <option value="persuasive">Persuasive</option>
+              <option value="inspirational">Inspirational</option>
+            </select>
+          </label>
+
+          <label class="field field--sm">
+            <span>Audience</span>
+            <input id="audience" name="audience" type="text" placeholder="e.g. executives" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Extra instructions <em class="muted">(optional)</em></span>
+          <textarea id="instructions" name="instructions" rows="2"
+            placeholder="e.g. Include a slide on cost savings; keep it upbeat"></textarea>
+        </label>
+
+        <button id="submit" type="submit" class="btn">Generate presentation</button>
+      </form>
+
+      <!-- Loading -->
+      <div id="loading" class="status" hidden>
+        <div class="spinner"></div>
+        <p id="loading-text">Generating your deck… this usually takes 20–40 seconds.</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error" class="status status--error" hidden>
+        <p id="error-text"></p>
+      </div>
+    </section>
+
+    <!-- Result -->
+    <section id="result" class="card result" hidden>
+      <div class="result-head">
+        <h2 id="result-title">Your presentation</h2>
+        <div class="actions">
+          <a id="dl-pdf" class="btn btn--sm" href="#" target="_blank" rel="noopener">Download PDF</a>
+          <a id="dl-pptx" class="btn btn--sm btn--ghost" href="#" target="_blank" rel="noopener">Download PPTX</a>
+        </div>
+      </div>
+      <iframe id="preview" class="preview" title="PDF preview"></iframe>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Built for the ContentBeta assessment · n8n + Gemini + a render service
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
