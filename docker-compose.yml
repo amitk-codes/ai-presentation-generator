@@ -1,0 +1,25 @@
+# Presentation Automation — service stack
+#
+# Commit 1 (scaffold): only n8n runs here. The render-service, mcp-server, and
+# frontend services are added to this file at their own milestones, so the
+# compose file grows commit-by-commit alongside the code.
+
+services:
+  # n8n — the orchestration "brain". The full slide-generation workflow lives
+  # here as visible nodes: webhook -> Gemini -> validate -> render -> respond.
+  n8n:
+    image: n8nio/n8n:latest # pin to the exact version after first `docker compose up` (see README)
+    container_name: pa-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_SECURE_COOKIE=false # allow plain-http access over localhost
+      - N8N_RUNNERS_ENABLED=true
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      # Webhook base URL so the frontend + MCP server can reach triggers by name
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n # persists workflows + credentials across restarts
+
+volumes:
+  n8n_data:

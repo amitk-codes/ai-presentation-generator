@@ -1,0 +1,17 @@
+# Secrets
+.env
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Generated presentations
+output/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
