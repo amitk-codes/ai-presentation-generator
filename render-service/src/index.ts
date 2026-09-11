@@ -40,7 +40,16 @@ app.post("/render", async (req, res) => {
       ? req.body.formats
       : ["pdf", "pptx"];
 
-  const id = crypto.randomUUID().slice(0, 8);
+  // Filename from the deck title (slug) + a short random suffix for uniqueness,
+  // e.g. "shipping-with-confidence-a1b2.pdf".
+  const slug =
+    deck.title
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "presentation";
+  const id = `${slug}-${crypto.randomUUID().slice(0, 4)}`;
   try {
     // Fetch + embed Pexels photos for any slide with an image_query (best-effort).
     await resolveImages(deck);
