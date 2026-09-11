@@ -1,118 +1,98 @@
-# Presentation Automation
+# AI Presentation Generator
 
-An AI presentation generator: give it a topic and instructions, and it produces a
-downloadable slide deck (**PDF** and editable **PowerPoint**).
+Turn a topic into a polished, downloadable slide deck — **PDF** and editable
+**PowerPoint** — in a few seconds. Describe what you want, pick a tone, and the system
+drafts a structured, on-brand presentation with photos and varied layouts.
 
 Built by studying the open-source [Presenton](https://github.com/presenton/presenton)
-project, then **redesigning its core pipeline** into a lean, multi-interface product.
-The slide-generation logic runs inside an **n8n** workflow, reachable two ways: a simple
-web frontend, and an **MCP server** callable from ChatGPT or Claude.
+project and **redesigning its core pipeline** into a lean, multi-interface product: the
+generation logic lives in an **n8n** workflow, reachable two ways — a web app and an
+**MCP server** callable from ChatGPT or Claude.
+
+_Built by Amit Kumar · [GitHub](https://github.com/amitk-codes) · [LinkedIn](https://www.linkedin.com/in/amitkumar-aiml)_
+
+> Design decisions and trade-offs are documented in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ## Architecture
 
 ```
-   ┌─────────────┐         ┌─────────────┐
-   │   Website   │         │ ChatGPT /   │
-   │ (simple UI) │         │   Claude    │   ← two ways in
-   └──────┬──────┘         └──────┬──────┘
-          │                       │ (via MCP server)
-          └───────────┬───────────┘
-                      ▼
-            ┌───────────────────┐
-            │   n8n workflow    │   ← the brain: prompt → Gemini → deck data
-            └─────────┬─────────┘
-                      ▼
-            ┌───────────────────┐
-            │  Render service   │   ← deck data → PDF + PPTX (downloadable)
-            └───────────────────┘
+   ┌─────────────┐         ┌──────────────────┐
+   │   Web app   │         │  ChatGPT / Claude │
+   │  (React)    │         │   (via MCP)       │   ← two ways in
+   └──────┬──────┘         └────────┬──────────┘
+          │                         │
+          └────────────┬────────────┘
+                       ▼
+             ┌───────────────────┐
+             │   n8n workflow    │   ← the "brain": prompt → AI → deck JSON
+             └─────────┬─────────┘
+                       ▼
+             ┌───────────────────┐
+             │  Render service   │   ← deck JSON → themed PDF + PPTX
+             └───────────────────┘
 ```
 
-- **AI model:** Google Gemini (`gemini-3.1-flash-lite`)
-- **Orchestration:** n8n (self-hosted)
-- **Render service:** Node.js + TypeScript, Playwright (PDF) + pptxgenjs (PPTX); per-tone
-  themes (fonts/colors), Pexels photos, and varied layouts (stat / quote / split)
-- **Frontend:** React + TypeScript (Vite) + Tailwind CSS v4, pdf.js for the slide preview
-- **MCP server:** Node.js + TypeScript, official MCP SDK (Streamable HTTP)
-- **Packaging:** Docker Compose
+One generation engine (the n8n workflow); the web app and the MCP server are thin
+clients that trigger the **same** workflow. A render service turns the AI's structured
+deck JSON into downloadable files.
+
+| Layer | Technology |
+|---|---|
+| AI model | Google Gemini (`gemini-3.1-flash-lite`) |
+| Orchestration | n8n (self-hosted) |
+| Render service | Node.js + TypeScript · Playwright (PDF) · pptxgenjs (PPTX) |
+| Frontend | React + TypeScript · Vite · Tailwind CSS v4 · pdf.js |
+| MCP server | Node.js + TypeScript · official MCP SDK (Streamable HTTP) |
+| Packaging | Docker Compose |
+
+## Features
+
+- **Web app** — type a topic, pick tone / slide count / audience, preview the deck
+  (pdf.js), and download PDF + PPTX.
+- **MCP server** — generate decks from inside ChatGPT or Claude via a `generate_presentation` tool.
+- **Per-tone themes** — professional, casual, academic, persuasive, inspirational — each
+  with its own fonts and colors.
+- **Photos** — relevant Pexels images on cover/section/split slides (optional; graceful
+  fallback to clean typography).
+- **Varied layouts** — title, content, section, big-stat, quote, and text+photo split.
+- **Two formats** — a pixel-consistent PDF and a genuinely editable PowerPoint from one
+  source of truth.
 
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 - A free Google Gemini API key — [Google AI Studio](https://aistudio.google.com/apikey)
-- *(optional)* A free [Pexels API key](https://www.pexels.com/api/) for slide photos —
-  without it, decks render with clean typography (no photos)
+- _(optional)_ A free [Pexels API key](https://www.pexels.com/api/) for slide photos
 
-## Quickstart (work in progress)
+## Quickstart
 
 ```bash
-# 1. Configure your key
+# 1. Configure your keys
 cp .env.example .env
-#    then edit .env and paste your GEMINI_API_KEY
+#    edit .env → add GEMINI_API_KEY (and optionally PEXELS_API_KEY)
 
-# 2. Start the stack (currently: n8n)
-docker compose up
-
-# 3. Open n8n
-#    http://localhost:5678
-```
-
-> This project is being built milestone by milestone. Setup steps for the render
-> service, frontend, and MCP server are added as those pieces land.
-
-## Render service
-
-A standalone Node/TypeScript service that turns **deck JSON** into a **PDF** (via
-Playwright) and an editable **PPTX** (via pptxgenjs). Try it directly:
-
-```bash
-docker compose up --build render-service
-```
-
-```bash
-curl -X POST http://localhost:4000/render \
-  -H "Content-Type: application/json" \
-  -d '{
-    "deck": {
-      "title": "Introduction to Machine Learning",
-      "slides": [
-        { "type": "title", "title": "Introduction to Machine Learning", "subtitle": "A gentle overview" },
-        { "type": "content", "title": "What is ML?", "bullets": ["Learns patterns from data", "Improves without explicit rules", "Powers vision, language, recommendations"], "notes": "Open with a relatable example." },
-        { "type": "closing", "title": "Thank you", "subtitle": "Questions?" }
-      ]
-    }
-  }'
-```
-
-The response contains `files.pdf` and `files.pptx` download URLs.
-
-## n8n workflow (the generation pipeline)
-
-The core logic lives in `workflows/presentation-generator.json` as six visible nodes:
-
-```
-Webhook → Build Gemini Request → Gemini → Parse Deck → Render → Respond
-```
-
-A topic goes in, Gemini returns structured deck JSON (forced via a response schema),
-the render service turns it into files, and the webhook returns the download URLs.
-
-**Run it:**
-
-```bash
-cp .env.example .env        # add your GEMINI_API_KEY
+# 2. Build and start everything (web + n8n + render + mcp)
 docker compose up -d --build
 
-# Import + activate the workflow (one-time)
+# 3. Import and activate the n8n workflow (one-time)
 docker cp workflows/presentation-generator.json pa-n8n:/tmp/wf.json
 docker compose exec -T n8n n8n import:workflow --input=/tmp/wf.json
 docker compose exec -T n8n n8n update:workflow --id=presgenwf0000001 --active=true
 docker compose restart n8n
+
+# 4. Open the web app
+open http://localhost:8080
 ```
 
-You can also import it from the n8n UI (http://localhost:5678 → Import from File).
+Ports: web `8080` · n8n `5678` · render `4000` · MCP `8787`.
 
-**Generate a deck:**
+## Using it
 
+### 1. Web app
+Open **http://localhost:8080**, enter a topic, choose options, and generate. Preview the
+slides and download the PDF or PPTX.
+
+### 2. REST (the workflow's webhook)
 ```bash
 curl -X POST http://localhost:5678/webhook/generate \
   -H "Content-Type: application/json" \
@@ -120,59 +100,53 @@ curl -X POST http://localhost:5678/webhook/generate \
 # → { "title": "...", "files": { "pdf": "...", "pptx": "..." } }
 ```
 
-Prefer to test the logic without n8n? `node --env-file=.env scripts/smoke-test.mjs "Your topic"`.
-
-## Frontend
-
-A **React + TypeScript** single-page app (Vite, styled with **Tailwind CSS v4**) to
-drive the whole thing — open
-**http://localhost:8080** after `docker compose up`. Type a topic, pick tone / slide
-count / audience, and download the deck. The result shows a live **pdf.js** preview
-with clickable slide thumbnails.
-
-- **Design:** brand-aligned (Space Grotesk + Playfair Display, electric-yellow accent,
-  sharp corners, hard shadows), with hover/entrance micro-interactions.
-- **No CORS:** nginx serves the built bundle and reverse-proxies `/webhook/*` (to n8n)
-  and `/files/*` (to the render service), so the browser — and pdf.js — stay same-origin.
-- **Build:** a multi-stage Dockerfile runs `vite build`, then nginx serves the static
-  bundle. Files: `frontend/src/` (components) + `frontend/nginx.conf` + `frontend/Dockerfile`.
-
-For active frontend development with hot-reload: `cd frontend && npm install && npm run dev`
-(Vite proxies `/webhook` and `/files` to the running containers).
-
-## MCP server (ChatGPT / Claude)
-
-A remote **MCP server** (Streamable HTTP) exposes one tool, `generate_presentation`,
-that triggers the **same n8n workflow**. It runs at `http://localhost:8787/mcp` and
-holds no generation logic of its own. Files: `mcp-server/`.
-
-**Expose it publicly** (ChatGPT/Claude are cloud services and need a public URL):
+### 3. MCP (ChatGPT / Claude)
+The MCP server runs at `http://localhost:8787/mcp` and triggers the same workflow. Since
+ChatGPT/Claude are cloud services, expose it with a tunnel:
 
 ```bash
-# no signup required
-cloudflared tunnel --url http://localhost:8787
-# → gives a https://<random>.trycloudflare.com URL
+cloudflared tunnel --url http://localhost:8787   # → https://<random>.trycloudflare.com
 ```
 
-**Connect it:**
+Add `https://<your-tunnel>/mcp` as a **custom connector** (no auth) in Claude
+(Settings → Connectors) or ChatGPT (Settings → Connectors / Developer mode), then ask:
+*"Generate a 6-slide professional deck about the future of AI."*
 
-- **Claude** (claude.ai → Settings → Connectors → Add custom connector) or Claude
-  Desktop: use `https://<your-tunnel>/mcp`, no authentication.
-- **ChatGPT** (Settings → Connectors / Developer mode → Add): same
-  `https://<your-tunnel>/mcp` URL, no authentication.
+> Returned links point at `localhost:4000` (works on the machine running the stack). For
+> a fully remote setup, tunnel the render service too and set `PUBLIC_BASE_URL`.
 
-Then ask: *"Generate a 6-slide professional deck about the future of AI."* The
-assistant calls the tool and returns PDF + PPTX download links.
+## Configuration
 
-> The returned links point at `localhost:4000`, which works when you click them on
-> the same machine running the stack. For a fully remote setup, also tunnel the
-> render service and set `PUBLIC_BASE_URL` to that public URL.
+Set in `.env` (see `.env.example`):
 
-## Status
+| Variable | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | yes | Google Gemini API key |
+| `GEMINI_MODEL` | no | Model id (default `gemini-3.1-flash-lite`) |
+| `PEXELS_API_KEY` | no | Slide photos; omit for typography-only decks |
+| `PUBLIC_BASE_URL` | no | Base URL in download links (set to a tunnel for remote demos) |
 
-- [x] Scaffold + n8n
-- [x] Render service (PDF + PPTX)
-- [x] n8n generation workflow
-- [x] Frontend
-- [x] MCP server
-- [ ] Docs + demo
+## Project structure
+
+```
+.
+├── docker-compose.yml          # web + n8n + render + mcp
+├── workflows/                  # the n8n workflow (the generation pipeline)
+├── render-service/             # deck JSON → PDF + PPTX (themes, photos, layouts)
+├── frontend/                   # React + TS + Tailwind web app
+├── mcp-server/                 # MCP server (calls the same workflow)
+└── scripts/smoke-test.mjs      # test the pipeline without n8n
+```
+
+## Testing the pipeline without n8n
+
+```bash
+node --env-file=.env scripts/smoke-test.mjs "The future of remote work"
+# THEME=persuasive node --env-file=.env scripts/smoke-test.mjs "Four-day work week"
+```
+
+## Credits
+
+Built by **Amit Kumar** — [GitHub](https://github.com/amitk-codes) ·
+[LinkedIn](https://www.linkedin.com/in/amitkumar-aiml). Inspired by
+[Presenton](https://github.com/presenton/presenton).
