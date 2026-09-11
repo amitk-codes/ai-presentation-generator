@@ -59,13 +59,10 @@ services:
   # frontend — a simple web form. nginx serves the static page AND reverse-proxies
   # /webhook/* to n8n, so the browser stays same-origin (no CORS needed).
   frontend:
-    image: nginx:alpine
+    build: ./frontend # multi-stage: Vite build (React + TS) → nginx serves the bundle
     container_name: pa-frontend
     ports:
       - "8080:80"
-    volumes:
-      - ./frontend/public:/usr/share/nginx/html:ro
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - n8n
       - render-service

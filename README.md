@@ -30,7 +30,7 @@ web frontend, and an **MCP server** callable from ChatGPT or Claude.
 - **AI model:** Google Gemini (`gemini-3.1-flash-lite`)
 - **Orchestration:** n8n (self-hosted)
 - **Render service:** Node.js + TypeScript, Playwright (PDF) + pptxgenjs (PPTX)
-- **Frontend:** plain HTML/CSS/JS
+- **Frontend:** React + TypeScript (Vite) + Tailwind CSS v4, pdf.js for the slide preview
 - **MCP server:** Node.js + TypeScript, official MCP SDK (Streamable HTTP)
 - **Packaging:** Docker Compose
 
@@ -121,11 +121,21 @@ Prefer to test the logic without n8n? `node --env-file=.env scripts/smoke-test.m
 
 ## Frontend
 
-A simple web page to drive the whole thing — open **http://localhost:8080** after
-`docker compose up`. Type a topic, pick options, and download the deck.
+A **React + TypeScript** single-page app (Vite, styled with **Tailwind CSS v4**) to
+drive the whole thing — open
+**http://localhost:8080** after `docker compose up`. Type a topic, pick tone / slide
+count / audience, and download the deck. The result shows a live **pdf.js** preview
+with clickable slide thumbnails.
 
-nginx serves the static page and reverse-proxies `/webhook/*` to n8n, so the browser
-stays same-origin (no CORS). Files: `frontend/public/` + `frontend/nginx.conf`.
+- **Design:** brand-aligned (Space Grotesk + Playfair Display, electric-yellow accent,
+  sharp corners, hard shadows), with hover/entrance micro-interactions.
+- **No CORS:** nginx serves the built bundle and reverse-proxies `/webhook/*` (to n8n)
+  and `/files/*` (to the render service), so the browser — and pdf.js — stay same-origin.
+- **Build:** a multi-stage Dockerfile runs `vite build`, then nginx serves the static
+  bundle. Files: `frontend/src/` (components) + `frontend/nginx.conf` + `frontend/Dockerfile`.
+
+For active frontend development with hot-reload: `cd frontend && npm install && npm run dev`
+(Vite proxies `/webhook` and `/files` to the running containers).
 
 ## MCP server (ChatGPT / Claude)
 
