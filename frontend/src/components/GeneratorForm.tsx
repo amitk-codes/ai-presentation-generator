@@ -84,10 +84,11 @@ export default function GeneratorForm(props: Props) {
               <button type="button" className="step-btn" aria-label="More slides" onClick={() => clampSlides(1)}>+</button>
             </div>
           </div>
-          <label className="flex flex-col gap-2 flex-1">
+          <label className="flex flex-col gap-2 flex-1 min-w-0">
             <span className="field-label">Audience <em className="opt">(optional)</em></span>
             <input
               type="text"
+              className="w-full"
               value={props.audience}
               onChange={(e) => props.setAudience(e.target.value)}
               placeholder="e.g. executives, students"

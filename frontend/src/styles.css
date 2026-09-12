@@ -50,6 +50,7 @@
 
   input, textarea, select {
     @apply font-sans text-ink bg-bg-2 border border-line-2;
+    width: 100%;
     font-size: 15px;
     padding: 12px 14px;
     border-radius: 0;
