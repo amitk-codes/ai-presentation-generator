@@ -9,8 +9,6 @@ project and **redesigning its core pipeline** into a lean, multi-interface produ
 generation logic lives in an **n8n** workflow, reachable two ways — a web app and an
 **MCP server** callable from ChatGPT or Claude.
 
-_Built by Amit Kumar · [GitHub](https://github.com/amitk-codes) · [LinkedIn](https://www.linkedin.com/in/amitkumar-aiml)_
-
 > Design decisions and trade-offs are documented in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ## Architecture
@@ -147,6 +145,4 @@ node --env-file=.env scripts/smoke-test.mjs "The future of remote work"
 
 ## Credits
 
-Built by **Amit Kumar** — [GitHub](https://github.com/amitk-codes) ·
-[LinkedIn](https://www.linkedin.com/in/amitkumar-aiml). Inspired by
-[Presenton](https://github.com/presenton/presenton).
+Inspired by [Presenton](https://github.com/presenton/presenton).

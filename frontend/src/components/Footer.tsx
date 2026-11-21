@@ -7,13 +7,7 @@ export default function Footer() {
           <span>AI Presentation <span className="text-brand">Generator</span></span>
         </div>
         <p className="text-muted text-[13px] m-0">
-          Built with <span className="text-brand">♥</span> by <strong>Amit Kumar</strong>
-          {" · "}
-          <a href="https://github.com/amitk-codes" target="_blank" rel="noopener"
-             className="text-ink hover:text-brand transition-colors underline underline-offset-2 decoration-line-2">GitHub</a>
-          {" · "}
-          <a href="https://www.linkedin.com/in/amitkumar-aiml" target="_blank" rel="noopener"
-             className="text-ink hover:text-brand transition-colors underline underline-offset-2 decoration-line-2">LinkedIn</a>
+          Prompt → deck, end-to-end — n8n workflow + MCP server + AI.
         </p>
       </div>
     </footer>

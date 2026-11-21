@@ -7,15 +7,11 @@ export default function Nav() {
           <span className="font-bold text-lg max-[620px]:text-base tracking-tight">
             AI Presentation <span className="text-brand">Generator</span>
           </span>
-          <span className="text-[10px] text-muted font-medium normal-case tracking-normal mt-0.5">
-            by Amit Kumar
-          </span>
         </span>
       </a>
       <nav className="flex gap-[26px] ml-3 max-[900px]:hidden">
         <a href="#how" className="nav-link">How it works</a>
         <a href="#features" className="nav-link">Features</a>
-        <a href="https://github.com/amitk-codes/ai-presentation-generator" target="_blank" rel="noopener" className="nav-link">GitHub ↗</a>
       </nav>
       <div className="ml-auto flex items-center gap-4">
         <div className="flex gap-1.5 max-[620px]:hidden" aria-hidden="true">
