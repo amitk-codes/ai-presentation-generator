@@ -5,7 +5,7 @@ export default function Nav() {
         <span className="w-4 h-4 bg-brand shadow-hard inline-block shrink-0" />
         <span className="flex flex-col leading-none">
           <span className="font-bold text-lg max-[620px]:text-base tracking-tight">
-            AI Presentation <span className="text-brand">Generator</span>
+            Deck<span className="text-brand">Gen</span>
           </span>
         </span>
       </a>

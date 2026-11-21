@@ -1,4 +1,4 @@
-# AI Presentation Generator
+# DeckGen
 
 Turn a topic into a polished, downloadable slide deck — **PDF** and editable
 **PowerPoint** — in a few seconds. Describe what you want, pick a tone, and the system

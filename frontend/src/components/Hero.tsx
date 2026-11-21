@@ -36,7 +36,7 @@ export default function Hero() {
   return (
     <section className="reveal pt-[clamp(48px,8vw,92px)] pb-[clamp(28px,4vw,44px)]">
       <div className="text-xs font-semibold tracking-[3px] text-brand mb-[18px]">
-        AI PRESENTATION AUTOMATION
+        AI DECK AUTOMATION
       </div>
       <h1 className="text-[clamp(40px,7vw,76px)] leading-[1.02]">
         Generate a <em>Presentation</em>

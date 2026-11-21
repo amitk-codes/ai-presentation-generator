@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-[1180px] mx-auto px-[clamp(20px,5vw,56px)] py-7 flex justify-between items-center gap-4 flex-wrap">
         <div className="inline-flex items-center gap-2.5 font-bold text-lg tracking-tight">
           <span className="w-4 h-4 bg-brand shadow-hard inline-block" />
-          <span>AI Presentation <span className="text-brand">Generator</span></span>
+          <span>Deck<span className="text-brand">Gen</span></span>
         </div>
         <p className="text-muted text-[13px] m-0">
           Prompt → deck, end-to-end — n8n workflow + MCP server + AI.

@@ -33,7 +33,7 @@ export async function renderPptx(deck: Deck, outPath: string): Promise<void> {
   const t: Theme = getTheme(deck.theme);
   const pptx = new pptxgen();
   pptx.layout = "LAYOUT_WIDE"; // 13.333 x 7.5 in
-  pptx.author = "AI Presentation Generator";
+  pptx.author = "DeckGen";
   pptx.title = deck.title;
 
   const A = hex(t.accent);
